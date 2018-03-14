@@ -1,0 +1,10 @@
+Execució de Servidor:
+Per tal d’executar el servidor el que hem de fer es obrir l’entorn de NetBeans carregar el projecte i executar.
+
+Execució de Client:
+- Obrir una terminal i situar-nos a la carpeta src.
+- Executar javac *.java (Compilar totes les classes)
+- Finalment executar el programa amb java Client <adreça> <port>
+- També el podem executar amb l’opció interactiva per tant passarem un altre argument:
+	- 0 per mode Manual: java Client <adreça> <port> 0
+	- 1 per mode Automàtic: java Client <adreça> <port> 1
