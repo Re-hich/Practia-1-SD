@@ -9,7 +9,7 @@ import java.util.Random;
  */
 public class Player {
     //Attributes
-    private final int NUMCARDS = 5; 
+    private final int NUMCARDS = 1; 
     private int id;
     private int balance; //Actual balance/credits
     private ArrayList<Card> hand; //Hand

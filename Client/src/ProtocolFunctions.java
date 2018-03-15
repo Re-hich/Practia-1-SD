@@ -3,10 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-/** Class with all data send protocol.
- *
- * @author Carles
- */
+/* Class with all data send protocol. */
 public class ProtocolFunctions {
     
     /** Sends client START
@@ -37,7 +34,7 @@ public class ProtocolFunctions {
     void clientBet(ComUtils comUtils, int chips) throws IOException{
         
         //Sends info to server
-        comUtils.write_buffer(comUtils.string_to_buffer("BET_"));
+        comUtils.write_buffer(comUtils.string_to_buffer("BETT"));
         comUtils.write_buffer(comUtils.string_to_buffer(" "));
         comUtils.write_buffer(comUtils.int_to_buffer(chips));
     }

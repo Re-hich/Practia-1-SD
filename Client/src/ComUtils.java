@@ -1,9 +1,7 @@
 import java.net.*;
 import java.io.*;
-/**Class ComUtils
- * 
- * @author Carles
- */
+/*Class ComUtils*/
+
 public class ComUtils {
 
     /* Mida d'una cadena de caracters */
