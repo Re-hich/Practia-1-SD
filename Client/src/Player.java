@@ -5,7 +5,7 @@ import java.util.Random;
 
 /**Class Player
  *
- * @author Carles
+ * @author Orlando i Hicham
  */
 public class Player {
     //Attributes

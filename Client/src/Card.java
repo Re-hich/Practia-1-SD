@@ -1,6 +1,6 @@
 /** Class Card
  * 
- * @author Carles
+ * @author Orlando i Hicham
  */
 public class Card {
     //Attributes

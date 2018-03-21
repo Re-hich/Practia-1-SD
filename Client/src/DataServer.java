@@ -1,7 +1,7 @@
 
 /** This class manages all parameters of the server
  *
- * @author Carles
+ * @author Orlando i Hicham
  */
 public class DataServer {
     //Variables of actual game

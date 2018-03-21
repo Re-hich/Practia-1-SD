@@ -4,7 +4,7 @@ import java.io.IOException;
 
 /**Class Errors, send errors to socket
  *
- * @author Carles
+ * @author Orlando i Hicham
  */
 public class Errors {
 

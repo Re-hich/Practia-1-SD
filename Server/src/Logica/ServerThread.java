@@ -15,7 +15,7 @@ import java.util.Hashtable;
 
 /**
  *
- * @author apardolo7.alumnes
+ * @author Orlando i Hicham
  */
 public class ServerThread extends Thread{
     Socket socket=null;
@@ -52,21 +52,19 @@ public class ServerThread extends Thread{
                 if(comUtils == null){
                     errors.errorIniConection(comUtils);
                 }
-                //El client ens envia directament el seu id 
-                comUtils.read_bytes(4);
-                comUtils.read_bytes(1);
-                id = comUtils.bytesToInt32(comUtils.read_bytes(4), "be");
+                //El client ens envia el STRT  
+                comUtils.read_bytes(4); // Llegim STRT
+                comUtils.read_bytes(1); // Llegim el espai 
+                id = comUtils.bytesToInt32(comUtils.read_bytes(4), "be"); // Obtenim el id 
                 //comprovem si el tenim ja
                 if(usuaris.containsKey(id)){
-                    //id = comUtils.read_int32();
                     file = new File("Server"+Thread.currentThread().getName()+".log");
                     //Creem un protocol
                     Protocol protocol = new Protocol(id,comUtils,file,usuaris);
                     protocol.iniciarPartida();
                 }
                 else{
-                    usuaris.put(id, 500);
-                    //id = comUtils.read_int32();
+                    usuaris.put(id, 10);
                     file = new File("Server"+Thread.currentThread().getName()+".log");
                     //Creem un protocol
                     Protocol protocol = new Protocol(id,comUtils,file,usuaris);
@@ -76,8 +74,6 @@ public class ServerThread extends Thread{
         }
         catch(Exception e){
             System.out.println("Thread closed");
-            //pw.print("C: QUIT");
-            //pw.close();
         }
     }
 }

@@ -3,7 +3,7 @@ import java.net.*;
 
 /**Class Client
  *
- * @author Carles
+ * @author Orlando i Hicham
  */
 public class Client {
     

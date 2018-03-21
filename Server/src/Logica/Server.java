@@ -12,13 +12,14 @@ package Logica;
  */
 import Utils.ComUtils;
 import Utils.Errors;
-import Model.Card;
-import Model.Deck;
-import Model.Hand;
 import java.io.*;
 import java.net.*;
 import java.util.Hashtable;
 
+/**
+ * 
+ * @author Orlando i Hicham
+ */
 public class Server {
     
   /**

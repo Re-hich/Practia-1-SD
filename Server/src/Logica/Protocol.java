@@ -8,11 +8,10 @@ package Logica;
 
 /**
  *
- * @author adri
+ * @author Orlando i Hicham
  */
 import Utils.ComUtils;
 import Utils.Errors;
-import Model.Card;
 import java.io.*;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +23,7 @@ public class Protocol {
     Errors errors;
     PrintWriter pw=null;
     int id;
-    String options[] = {"ANOK","QUIT"};; 
+    String options[] = {"BETT","QUIT"};; 
     Hashtable<Integer, Integer> usuaris;
     
     /**
@@ -50,19 +49,19 @@ public class Protocol {
      */
     void iniciarPartida() throws IOException, InterruptedException{
         try {
-            //Asignem els diners de la partida (en un futur haurem de fer un getCoinsClient(id) per asignar)
-            game.setInitialBet(100);
+            //Asignem els diners de la partida
+            game.setInitialBet(1);
             game.setClientChips(usuaris.get(id));
-            game.setServerChips(500);
+            game.setServerChips(10);
             game.setEnd(false);  
             pw = new PrintWriter(file);
             pw.println("C: STRT "+id);
-            pw.println("S: ANTE "+game.getInitialBet());                
+            pw.println("S: BLNC 010");                
             partida();
             usuaris.put(id, game.getClientChips());
             pw.close();
         } catch (IOException ex) {
-            pw.println("C: QUIT");
+            pw.println("C: EXIT");
             usuaris.put(id, game.getClientChips());
             pw.close();
             errors.sendDataError(comUtils);
@@ -75,11 +74,10 @@ public class Protocol {
      */
     void partida() throws IOException, InterruptedException{
         try{
-            //Primer informem de la aposta inicial i la quantitat de fiches/dinners que tenim
-            comUtils.write_buffer(comUtils.string_to_buffer("ANTE"));// string to buffer ens retorna bytes a partir d'un string 
+            //Primer informem el balance amb BLNC
+            comUtils.write_buffer(comUtils.string_to_buffer("BLNC"));// string to buffer ens retorna bytes a partir d'un string 
             comUtils.write_SP();
-            comUtils.write_buffer(comUtils.int_to_buffer(game.getInitialBet())); 
-            game.gameChipsInformation(pw);
+            comUtils.write_buffer(comUtils.string_to_buffer("010")); 
             while(!game.isEnd()){
                 TimeUnit.MILLISECONDS.sleep(100);
                 String command = new String(comUtils.read_bytes(4));
@@ -180,7 +178,7 @@ public class Protocol {
                         }
                         break;
 
-                    case "CALL"://cas per igualar l'aposta, acaba la ronda.
+                    case "CALL"://el client ens iguala la ronda
                         //sumem als diners de la jugada la ultima nostra aposta, ja que el client ens la iguala
                         if(game.getClientChips() > game.getLastBet()){
                         
@@ -193,7 +191,7 @@ public class Protocol {
                                 game.gameChipsInformation(pw);
 
                             }
-                        }else{
+                        }else{ //FALTA IMPLEMENTAR error
                             pw.println("S: ERRO 09Not Chips");
                             errors.sendChipsError(comUtils);
                             game.setEnd(true);
@@ -283,47 +281,37 @@ public class Protocol {
 
                         break;
 
-                    case "BET_": // aposta del client
-                        comUtils.read_bytes(1); // llegim el SP
-
-                        //decidime que fem després de rebre la opciRo del client de apostar
-                        String optionBet = game.generateDecision("BET_");
+                    case "BETT": // aposta del client
+                        //decidim que fem després de rebre la opcio del client de apostar
+                        String optionBet = game.generateDecision("BETT");
                         switch(optionBet){
                             case "CALL":                                   
                                 // igualem l'aposta del client
-                                int clientBet = comUtils.bytesToInt32(comUtils.read_bytes(4), "be");
-                                if(game.getServerChips() > clientBet){
-                                    game.setRoundBet(game.getRoundBet()+clientBet+clientBet);
-                                    game.setClientChips(game.getClientChips() - clientBet);
+                                if(game.getServerChips() > 1){
+                                    game.setRoundBet(game.getRoundBet()+1);
+                                    game.setClientChips(game.getClientChips() - 1);
                                     //Escrivim l'aposta al log
-                                    pw.println("C: BET_ "+clientBet);
+                                    pw.println("C: BETT");
 
                                     comUtils.write_buffer(comUtils.string_to_buffer("CALL"));
                                     pw.println("S: CALL");
-                                    game.setServerChips(game.getServerChips()-clientBet);
+                                    game.setServerChips(game.getServerChips()-1);
 
-                                    if(game.isDrawRound()){
-                                        game.showdown(pw);
-                                        game.gameChipsInformation(pw);
-                                    }
-                                }
-                                else{ // si toca la opcio de call pero no tenim diners, ens retirem
+                                } else { // si toca la opcio de call pero no tenim diners, ens retirem
                                     
                                     game.clientWins();
                                     pw.println("S: FOLD");
                                     comUtils.write_buffer(comUtils.string_to_buffer("FOLD"));                             
-                                    game.gameChipsInformation(pw);//enviem STKS
                                 }
 
                                 break;
+                                
                             case "FOLD":
-                                int desc = comUtils.bytesToInt32(comUtils.read_bytes(4), "be");
                                 game.clientWins();
                                 pw.println("S: FOLD");
                                 comUtils.write_buffer(comUtils.string_to_buffer("FOLD"));                             
-                                game.gameChipsInformation(pw);//enviem STKS
                                 break;
-                            case "RISE":
+                            case "BETT":  // FALTA IMPLEMENTAR lanzar DEAL y turno
                                 game.serverRaise(pw);
                                 break;
                         }
@@ -391,11 +379,43 @@ public class Protocol {
 
                     break;
 
-                    case "FOLD": // no anar a al jugada
+                    case "FOLD": // el client ens envia fold
                         game.serverWins();
-                        game.gameChipsInformation(pw);//enviem STKS
                         break;
+                        
+                    case "BLNC": // el client ens demana el credit
+                        comUtils.write_buffer(comUtils.string_to_buffer("BLNC"));// string to buffer ens retorna bytes a partir d'un string 
+                        comUtils.write_SP();
+                        String chips = null;
+                        if (game.getClientChips() < 99) {
+                            chips = "0"+String.valueOf(game.getClientChips());
+                        } else {
+                            chips = String.valueOf(game.getClientChips());
+                        }
+                        comUtils.write_buffer(comUtils.string_to_buffer(chips));
+                        break;        
+                    
+                    case "CHCK":
+                        //el clinet ens envia check
+                        //generem una accio aleatoria per al cas PASS
+                        String option = game.generateDecision("CHCK");
+                        switch(option){
+                            case "CHCK":
+                                pw.println("S: PASS");
+                                comUtils.write_buffer(comUtils.string_to_buffer("PASS"));
+                                if(game.isDrawRound()){// en el cas que ja hem descartat cartes, s'acaba la ronda
+                                    game.showdown(pw);
+                                    game.gameChipsInformation(pw);
+                                }
+                                break;
+                            case "BETT":
+                                game.serverBet(pw);
+                                break;
+                        }
+                        game.responseError(pw);
 
+                        break;
+                        
                     case "ERRO":
                         //tractem l'error
                         game.responseError(pw);
@@ -408,6 +428,7 @@ public class Protocol {
                         usuaris.put(id, game.getClientChips());
                         //pw.close();
                         break;
+                    
                     default:
                         errors.sendCommandError(comUtils);
                         pw.println("S: 13Command Error");

@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 /**Class ClientProtocol
  *
- * @author Carles
+ * @author Orlando i Hicham
  */
 public class ClientProtocol {  
     //Attributes

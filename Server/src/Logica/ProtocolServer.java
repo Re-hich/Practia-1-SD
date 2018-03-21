@@ -3,13 +3,12 @@ package Logica;
 
 import Utils.ComUtils;
 import Utils.Errors;
-import Model.Hand;
-import Model.Deck;
-import Model.Card;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 /*
@@ -20,7 +19,7 @@ import java.util.logging.Logger;
 
 /**
  * Complements Protocol
- * @author apardolo7.alumnes
+ * @author Orlando i Hicham
  */
 public class ProtocolServer {
 
@@ -31,13 +30,13 @@ public class ProtocolServer {
     private int clientChips = 0; // diners del client
     private int roundBet = 0;  /// aposta de la jugada
     private int lastBet; // ultima aposta que hem fet
-    private Hand serverHand; // ma del servidor
-    private Hand clientHand; // ma del client
-    private int dealer;  // dealer
+    private String serverHand; // ma del servidor
+    private String clientHand; // ma del client
+    private int turn;  // turn
     private boolean drawRound = false; // controloem si ja hem fet la ronda descartar cartes
     private boolean firstBet = true; 
+    private boolean start = true;
     private Errors errors = new Errors();
-    private Deck deck; // baralla per a la jugada
 
     /**
      * ProtocolFunctions constructor
@@ -45,47 +44,33 @@ public class ProtocolServer {
      */
     public ProtocolServer(ComUtils comUtils){
         this.comUtils = comUtils;
-        deck = new Deck();
-        serverHand = new Hand();
-        clientHand = new Hand();
-        //si el dealer es 0 nosaltres no tindrem que fer la priemra aposta
-        if(dealer == 0){
+        serverHand = "";
+        clientHand = "";
+        //si el turn es 0 nosaltres no tindrem que fer la priemera aposta
+        if(turn == 0){
             firstBet = false;
         }
     }
     
     /**
-     * New deck
-     */
-    public void resetDeck(){
-        deck = new Deck();
-    }
-    /**
-     * Generates new dealer 
+     * Generates new turn 
      * @return 
      */
     public int generateDealer(){
         Integer[] dealerOptions = new Integer[]{0,1};
         Collections.shuffle(Arrays.asList(dealerOptions));//desordenem
-        dealer = dealerOptions[0];
-        return dealer;
+        turn = dealerOptions[0];
+        return turn;
     }
+    
     /**
      * Funcio per tal d'assignar un dealer a la jugada
      * @return 
      */
-    public int getDealer(){  
-        return dealer;
+    public int getTurn(){  
+        return turn;
     }
-    /**
-     * Function to return a card of deck
-     * @return 
-     */
-    public Card getCard() {
-        //la carta es de la baralla i s'agafa aleatoriament
-        return deck.getCard();
-    }
-
+    
     /**
      * This function allows us make a decision
      * @param options
@@ -94,31 +79,41 @@ public class ProtocolServer {
     public String generateDecision(String option){
         String decision = "";
         switch(option){
-            case "ANOK":
-                String[] optionANOK = new String[]{"PASS","BET_"};
-                Collections.shuffle(Arrays.asList(optionANOK));
-                decision = optionANOK[0];        
+            case "BLNC":
+                //El client envia BLNC
+                String[] optionBlnc = new String[]{"BLNC"};
+                decision = optionBlnc[0];        
                 break;
-            case "PASS":
-                //Si el client fa un PASS, nosaltres podem fer un pass o un bet,
-                String[] optionPass = new String[]{"PASS","BET_"};
-                Collections.shuffle(Arrays.asList(optionPass));
+            case "CALL":
+                //Si el client fa un CALL, nosaltres fem un SHOW
+                String[] optionCall = new String[]{"SHOW"};
+                decision = optionCall[0];        
+                break;
+            case "SHOW":
+                //Si el client fa un SHOW, nosaltres fem un show
+                String[] optionPass = new String[]{"SHOW"};
                 decision = optionPass[0];        
                 break;
-            case "RISE":
-                String[] optionRise = new String[]{"CALL","FOLD"};//,"RISE"};
-                Collections.shuffle(Arrays.asList(optionRise));
-                decision = optionRise[0];        
+            case "CHCK":
+                String[] optionChck = new String[]{"CHCK","BETT"};
+                Collections.shuffle(Arrays.asList(optionChck));
+                decision = optionChck[0];        
                 break;
-            case "BET_":
-                String[] optionBet_ = new String[]{"CALL","FOLD","RISE"};
-                Collections.shuffle(Arrays.asList(optionBet_));
-                decision = optionBet_[0];        
+            case "BETT":
+                //El client envia un BETT
+                if (this.start) {
+                    String[] optionBett = new String[]{"BETT"};
+                    decision = optionBett[0];
+                } else {
+                    String[] optionBett = new String[]{"CALL","FOLD"};
+                    Collections.shuffle(Arrays.asList(optionBett));
+                    decision = optionBett[0];
+                }
                 break;
-            case "DRAW":
-                String[] optionD = new String[]{"PASS","FOLD","BET_"};
-                Collections.shuffle(Arrays.asList(optionD));
-                decision = optionD[0];        
+            case "RPLY":
+                String[] optionRply = new String[]{"BLNC"};
+                Collections.shuffle(Arrays.asList(optionRply));
+                decision = optionRply[0];        
                 break;
 
         }
@@ -371,6 +366,9 @@ public class ProtocolServer {
     public void setEnd(boolean end) {
         this.end = end;
     }
+    
+    
+    
     /**
      * get ANTE
      * @return 
@@ -385,6 +383,23 @@ public class ProtocolServer {
     public void setInitialBet(int initialBet) {
         this.initialBet = initialBet;
     }
+    
+    /**
+     * get Start game
+     * @return 
+     */
+    public boolean isStart() {
+        return start;
+    }
+    
+    /**
+     * set start game
+     * @param start 
+     */
+    public void setStart(boolean start) {
+        this.start = start;
+    }
+    
     /**
      * get Server Chips
      * @return 

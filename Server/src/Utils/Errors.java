@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  *
- * @author adrip
+ * @author Orlando i Hicham
  */
 public class Errors {
 
